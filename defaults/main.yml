@@ -3,3 +3,25 @@
 git_repo_url: "https://github.com/thecodingmachine/workadventure.git"
 git_branch: "fix/deploy-cleanup" # until https://github.com/thecodingmachine/workadventure/pull/698 is merged
 git_checkout_directory: "{{ ansible_user_dir }}/workadventure"
+
+# The base domain
+wa_domain: "workadventure.localhost"
+
+wa_debug_mode: "false"
+
+wa_jitsi_url: "meet.jit.si"
+# If your Jitsi environment has authentication set up, you MUST set JITSI_PRIVATE_MODE to "true" and you MUST pass a SECRET_JITSI_KEY to generate the JWT secret
+wa_jitsi_private_mode: "false"
+wa_jitsi_iss:
+wa_secret_jitsi_key:
+
+# URL of the TURN server (needed to "punch a hole" through some networks for P2P connections)
+wa_turn_server:
+wa_turn_user:
+wa_turn_password:
+
+# The URL used by default, in the form: "/_/global/map/url.json"
+wa_start_room_url: "/_/global/maps.workadventu.re/Floor0/floor0.json"
+
+# The email address used by Let's encrypt to send renewal warnings (compulsory)
+wa_acme_email:
