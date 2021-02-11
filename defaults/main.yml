@@ -1,2 +1,5 @@
 ---
 # defaults file for k4cg-wa
+git_repo_url: "https://github.com/thecodingmachine/workadventure.git"
+git_branch: "fix/deploy-cleanup" # until https://github.com/thecodingmachine/workadventure/pull/698 is merged
+git_checkout_directory: "{{ ansible_user_dir }}/workadventure"

@@ -1,2 +1,9 @@
 ---
 # tasks file for k4cg-wa
+- name: "Clone repo"
+  ansible.builtin.git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_checkout_directory }}"
+    version: "{{ git_branch }}"
+
+
