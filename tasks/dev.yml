@@ -1,0 +1,46 @@
+---
+# tasks file for setting up a local dev environment
+- name: "Include cleanup tasks"
+  ansible.builtin.include_tasks: tasks/cleanup.yml
+  when: run_cleanup_tasks
+
+- name: "Clone repo"
+  ansible.builtin.git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_checkout_directory }}"
+    version: "{{ git_branch }}"
+
+- name: "Template out env file"
+  ansible.builtin.template:
+    src: "templates/.env.j2"
+    dest: "{{ git_checkout_directory }}/.env"
+
+- name: "Run docker-compose up"
+  community.docker.docker_compose:
+    project_src: "{{ git_checkout_directory }}"
+  register: output_compose_up
+
+- name: "Print docker-compose up output"
+  ansible.builtin.debug:
+    var: output_compose_up
+
+# sometimes messages_pb module is missing
+# restarting services that depend on it should fix this
+# - name: "Wait for container build to be finished"
+#   wait_for:
+#     timeout: 180
+#   delegate_to: localhost
+
+# - name: "Restart front, back and pusher"
+#   community.docker.docker_compose:
+#     project_src: "{{ git_checkout_directory }}"
+#     services:
+#       - front
+#       - back
+#       - pusher
+#     restarted: yes
+#   register: output_restart_services
+
+# - name: "Print restart output"
+#   ansible.builtin.debug:
+#     var: output_restart_services

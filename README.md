@@ -10,6 +10,9 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 
 * git
 * docker
+* python >= 3.5
+* docker-compose installed via pip
+* docker python module
 
 Role Variables
 --------------
@@ -20,6 +23,8 @@ Dependencies
 ------------
 
 A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+
+* community.docker collection
 
 Example Playbook
 ----------------
@@ -46,3 +51,6 @@ TODO
 * Add role variables to README.md
 * Add dependencies (docker, docker-compose, evtl. Jitsi und Let's Encrypt) to meta/main.yml?
 * Test on a remote host
+* Set production environment and debug flags for containers
+* Check remaining env vars in docker-compose.yaml (and maybe set them by find and replace their values)
+* Let's encrypt config for traefik

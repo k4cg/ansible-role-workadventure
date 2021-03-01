@@ -1,12 +1,4 @@
 ---
 # tasks file for k4cg-wa
-- name: "Clone repo"
-  ansible.builtin.git:
-    repo: "{{ git_repo_url }}"
-    dest: "{{ git_checkout_directory }}"
-    version: "{{ git_branch }}"
-
-- name: "Template out env file"
-  ansible.builtin.template:
-    src: "templates/.env.j2"
-    dest: "{{ git_checkout_directory }}/contrib/docker/.env"
+- name: "Run tasks according to specified environment"
+  ansible.builtin.include_tasks: "tasks/{{ env }}.yml"

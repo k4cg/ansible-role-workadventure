@@ -1,10 +1,20 @@
 ---
 # defaults file for k4cg-wa
+run_cleanup_tasks: False
+
+# set environment
+# after checking out the defined brach (by default develop, see git_branch below)
+# "dev" uses docker-compose.yaml in the repo's root folder
+# containers are built from scratch
+# use this to setup a local dev environment
+env: "dev"
+
 git_repo_url: "https://github.com/thecodingmachine/workadventure.git"
-git_branch: "fix/deploy-cleanup" # until https://github.com/thecodingmachine/workadventure/pull/698 is merged
+git_branch: "develop"
 git_checkout_directory: "{{ ansible_user_dir }}/workadventure"
 
 # The base domain
+# not used in docker-compose.yaml atm
 wa_domain: "workadventure.localhost"
 
 wa_debug_mode: "false"
@@ -16,12 +26,18 @@ wa_jitsi_iss:
 wa_secret_jitsi_key:
 
 # URL of the TURN server (needed to "punch a hole" through some networks for P2P connections)
-wa_turn_server:
-wa_turn_user:
-wa_turn_password:
+# hardcoded in docker-compose.yaml atm
+wa_turn_server: "turn:coturn.workadventu.re:443,turns:coturn.workadventu.re:443"
+wa_turn_user: "workadventure"
+wa_turn_password: "WorkAdventure123"
+
+wa_admin_api_token: "admin123" # todo: purpose of this variable?
 
 # The URL used by default, in the form: "/_/global/map/url.json"
-wa_start_room_url: "/_/global/maps.workadventu.re/Floor0/floor0.json"
+# not used in docker-compose.yaml atm
+# wa_start_room_url: "/_/global/maps.workadventu.re/Floor0/floor0.json"
+wa_start_room_url: "/_/global/raw.githubusercontent.com/k4cg/rC3-assembly/master/main.json"
 
 # The email address used by Let's encrypt to send renewal warnings (compulsory)
+# not used in docker-compose.yaml atm
 wa_acme_email:

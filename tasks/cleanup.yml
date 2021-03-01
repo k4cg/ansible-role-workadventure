@@ -1,0 +1,37 @@
+---
+- name: "Check if directory {{ git_checkout_directory }} exists"
+  ansible.builtin.stat:
+    path: "{{ git_checkout_directory }}"
+  register: stat_result
+
+- name: "Print stat result - directory does not exist"
+  ansible.builtin.debug:
+    msg: "Directory does not exist. No cleanup taks will be run."
+  when: 
+    - stat_result.stat.isdir is undefined
+    - stat_result.stat.exists == False
+
+- name: "Print stat result - directory exists"
+  ansible.builtin.debug:
+    msg: "Directory exists. Continuing."
+  when: 
+    - stat_result.stat.isdir is defined
+    - stat_result.stat.isdir
+
+- name: "Start cleanup tasks"
+  block:
+    - name: "Run docker-compose down"
+      community.docker.docker_compose:
+        project_src: "{{ git_checkout_directory }}"
+        state: absent
+      register: output_compose_down
+
+    - name: "Print docker-compose down output"
+      ansible.builtin.debug:
+        var: output_compose_down
+
+    - name: "Remove repo folder"
+      ansible.builtin.file:
+        path: "{{ git_checkout_directory }}"
+        state: absent
+  when: stat_result.stat.isdir is defined and stat_result.stat.isdir
