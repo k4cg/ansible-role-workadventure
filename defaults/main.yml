@@ -1,5 +1,7 @@
 ---
 # defaults file for k4cg-wa
+install_prerequisites: False
+
 run_cleanup_tasks: False
 
 # set environment

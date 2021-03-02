@@ -1,4 +1,8 @@
 ---
 # tasks file for k4cg-wa
+- name: "Install pre-requisites"
+  ansible.builtin.include_tasks: "tasks/install_prerequisites.yml"
+  when: install_prerequisites
+
 - name: "Run tasks according to specified environment"
   ansible.builtin.include_tasks: "tasks/{{ env }}.yml"

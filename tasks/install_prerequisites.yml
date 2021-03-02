@@ -1,0 +1,47 @@
+---
+# update package cache and install docker, pip, git
+# install docker-compose and python docker module via pip
+# only debian/ubuntu support for now
+
+- name: "Install pre-requisites block"
+  block:
+    # https://github.com/geerlingguy/ansible-role-docker/issues/215
+    - name: "Update apt cache"
+      ansible.builtin.apt:
+        update_cache: True
+        upgrade: safe
+
+    - name: "Install docker"
+      include_role:
+        name: geerlingguy.docker
+      vars:
+        docker_users: ["{{ ansible_user_id }}"]
+        docker_install_compose: False
+
+    - name: "Ensure pip is installed"
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+
+    - name: "Make sure git is installed"
+      ansible.builtin.package:
+        name: git
+        state: present
+  become: True
+
+# needed for community.docker.docker_compose
+- name: "Ensure docker python module is installed"
+  ansible.builtin.pip:
+    name: docker
+    executable: pip3
+    extra_args: --user
+
+# needed for community.docker.docker_compose
+# ansible can not use docker-compose that can be installed by geeringguy/docker
+# we have to install it separately
+- name: Ensure docker-compose is installed
+  ansible.builtin.pip:
+    name: docker-compose
+    version: "1.26.0" # see https://github.com/geerlingguy/ansible-role-docker/issues/129
+    executable: pip3
+    extra_args: --user
