@@ -1,0 +1,21 @@
+---
+# tasks file for setting up a local dev environment
+- name: "Clone repo"
+  ansible.builtin.git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_checkout_directory }}"
+    version: "{{ git_branch }}"
+
+- name: "Template out env file"
+  ansible.builtin.template:
+    src: "templates/.env.{{ env }}.j2"
+    dest: "{{ docker_compose_project_dir }}/.env"
+
+- name: "Run docker-compose up"
+  community.docker.docker_compose:
+    project_src: "{{ docker_compose_project_dir }}"
+  register: output_compose_up_dev
+
+- name: "Print docker-compose up output"
+  ansible.builtin.debug:
+    var: output_compose_up_dev

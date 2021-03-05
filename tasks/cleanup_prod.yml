@@ -1,7 +1,7 @@
 ---
-- name: "Check if directory {{ git_checkout_directory }} exists"
+- name: "Check if directory {{ docker_compose_project_dir }} exists"
   ansible.builtin.stat:
-    path: "{{ git_checkout_directory }}"
+    path: "{{ docker_compose_project_dir }}"
   register: stat_result
 
 - name: "Print stat result - directory does not exist"
@@ -22,16 +22,20 @@
   block:
     - name: "Run docker-compose down"
       community.docker.docker_compose:
-        project_src: "{{ git_checkout_directory }}"
+        project_src: "{{ docker_compose_project_dir }}"
+        files:
+          - docker-compose.prod.yaml
         state: absent
-      register: output_compose_down
+      register: output_compose_down_prod
 
     - name: "Print docker-compose down output"
       ansible.builtin.debug:
-        var: output_compose_down
+        var: output_compose_down_prod
 
-    - name: "Remove repo folder"
+    - name: "Remove docker-compose project folder"
       ansible.builtin.file:
-        path: "{{ git_checkout_directory }}"
+        path: "{{ docker_compose_project_dir }}"
         state: absent
-  when: stat_result.stat.isdir is defined and stat_result.stat.isdir
+  when: 
+    - stat_result.stat.isdir is defined
+    - stat_result.stat.isdir

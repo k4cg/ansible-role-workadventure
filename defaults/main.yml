@@ -1,45 +1,55 @@
 ---
 # defaults file for k4cg-wa
-install_prerequisites: False
 
+# see tasks/install_prerequisites.yml
+install_prerequisites: True
+# see tasks/cleanup.yml
 run_cleanup_tasks: False
+deploy_wa: True
 
 # set environment
-# after checking out the defined brach (by default develop, see git_branch below)
-# "dev" uses docker-compose.yaml in the repo's root folder
+# "dev" checks out branch defined in git_branch and 
+# uses docker-compose.yaml in the repo's root folder
 # containers are built from scratch
-# use this to setup a local dev environment
-env: "dev"
+# "prod" uses templates/docker-compose.prod.j2
+# and pulls containers from docker hub
+env: "prod"
 
 git_repo_url: "https://github.com/thecodingmachine/workadventure.git"
-git_branch: "develop"
+git_branch: "develop" # only used for dev deployments
 git_checkout_directory: "{{ ansible_user_dir }}/workadventure"
+docker_compose_project_dir: "{{ ansible_user_dir }}/workadventure" # set this to your git checkout directory for dev deployments
 
 # The base domain
-# not used in docker-compose.yaml atm
+# docker-compose.yaml in the repo's root folder (used in dev deployments) has workadventure.localhost hardcoded
 wa_domain: "workadventure.localhost"
 
-wa_debug_mode: "false"
+wa_debug_mode: "false" # set this to true for dev deployments
 
 wa_jitsi_url: "meet.jit.si"
 # If your Jitsi environment has authentication set up, you MUST set JITSI_PRIVATE_MODE to "true" and you MUST pass a SECRET_JITSI_KEY to generate the JWT secret
 wa_jitsi_private_mode: "false"
-wa_jitsi_iss:
-wa_secret_jitsi_key:
+wa_jitsi_iss: ""
+wa_secret_jitsi_key: ""
 
 # URL of the TURN server (needed to "punch a hole" through some networks for P2P connections)
-# hardcoded in docker-compose.yaml atm
 wa_turn_server: "turn:coturn.workadventu.re:443,turns:coturn.workadventu.re:443"
 wa_turn_user: "workadventure"
 wa_turn_password: "WorkAdventure123"
+wa_turn_static_auth_secret: ""
 
-wa_admin_api_token: "admin123" # todo: purpose of this variable?
+wa_admin_api_token: "" # todo: purpose of this variable?
+wa_admin_api_url: "" # todo: purpose of this variable?
+
+# used by pusher to sign jwt tokens
+wa_secret_key: "!!!CHANGE_ME!!!"
 
 # The URL used by default, in the form: "/_/global/map/url.json"
-# not used in docker-compose.yaml atm
 # wa_start_room_url: "/_/global/maps.workadventu.re/Floor0/floor0.json"
 wa_start_room_url: "/_/global/raw.githubusercontent.com/k4cg/rC3-assembly/master/main.json"
 
+traefik_log_level: "INFO"
 # The email address used by Let's encrypt to send renewal warnings (compulsory)
-# not used in docker-compose.yaml atm
-wa_acme_email:
+traefik_acme_email: ""
+traefik_acme_cert_storage: "{{ docker_compose_project_dir }}/acme.json"
+traefik_use_acme: True

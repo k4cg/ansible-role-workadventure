@@ -1,0 +1,113 @@
+# taken from branch master, https://github.com/thecodingmachine/workadventure/commit/3eec41a1d09e94db224f301b412f5f628caaa779
+# added some minor tweaks
+
+version: "3.3"
+services:
+  reverse-proxy:
+    image: traefik:v2.3
+    command:
+      - --log.level={{ traefik_log_level }}
+      #- --api.insecure=true
+      - --providers.docker
+      - --entryPoints.web.address=:80
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entryPoints.websecure.address=:443
+{% if traefik_use_acme %}
+      - --certificatesresolvers.myresolver.acme.email={{ traefik_acme_email }}
+      - --certificatesresolvers.myresolver.acme.storage=/acme.json
+      # used during the challenge
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+{% endif %}
+    ports:
+      - "80:80"
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      #- "8080:8080"
+    depends_on:
+      - pusher
+      - front
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+{% if traefik_use_acme %}
+      - {{ traefik_acme_cert_storage }}:/acme.json
+{% endif %}
+    restart: unless-stopped
+
+
+  front:
+    # build:
+    #   context: ../..
+    #   dockerfile: front/Dockerfile
+    image: thecodingmachine/workadventure-front:master
+    environment:
+      DEBUG_MODE: "{{ wa_debug_mode }}"
+      JITSI_URL: "{{ wa_jitsi_url }}"
+      JITSI_PRIVATE_MODE: "{{ wa_jitsi_private_mode }}"
+      API_URL: "pusher.{{ wa_domain }}"
+      TURN_SERVER: "{{ wa_turn_server }}"
+      TURN_USER: "{{ wa_turn_user }}"
+      TURN_PASSWORD: "{{ wa_turn_password }}"
+      START_ROOM_URL: "{{ wa_start_room_url }}"
+    labels:
+      - "traefik.http.routers.front.rule=Host(`play.{{ wa_domain }}`)"
+      - "traefik.http.routers.front.entryPoints=web"
+      - "traefik.http.services.front.loadbalancer.server.port=80"
+      - "traefik.http.routers.front-ssl.rule=Host(`play.{{ wa_domain }}`)"
+      - "traefik.http.routers.front-ssl.entryPoints=websecure"
+      - "traefik.http.routers.front-ssl.tls=true"
+      - "traefik.http.routers.front-ssl.service=front"
+{% if traefik_use_acme %}
+      - "traefik.http.routers.front-ssl.tls.certresolver=myresolver"
+{% endif %}
+    restart: unless-stopped
+
+  pusher:
+    # build:
+    #   context: ../..
+    #   dockerfile: pusher/Dockerfile
+    image: thecodingmachine/workadventure-pusher:master
+    command: yarn run runprod
+    environment:
+      SECRET_JITSI_KEY: "{{ wa_secret_jitsi_key }}"
+      SECRET_KEY: "{{ wa_secret_key }}"
+      API_URL: back:50051
+      JITSI_URL: "{{ wa_jitsi_url }}"
+      JITSI_ISS: "{{ wa_jitsi_iss }}"
+    labels:
+      - "traefik.http.routers.pusher.rule=Host(`pusher.{{ wa_domain }}`)"
+      - "traefik.http.routers.pusher.entryPoints=web"
+      - "traefik.http.services.pusher.loadbalancer.server.port=8080"
+      - "traefik.http.routers.pusher-ssl.rule=Host(`pusher.{{ wa_domain }}`)"
+      - "traefik.http.routers.pusher-ssl.entryPoints=websecure"
+      - "traefik.http.routers.pusher-ssl.tls=true"
+      - "traefik.http.routers.pusher-ssl.service=pusher"
+{% if traefik_use_acme %}
+      - "traefik.http.routers.pusher-ssl.tls.certresolver=myresolver"
+{% endif %}
+    restart: unless-stopped
+
+  back:
+    # build:
+    #   context: ../..
+    #   dockerfile: back/Dockerfile
+    image: thecodingmachine/workadventure-back:master
+    command: yarn run runprod
+    environment:
+      SECRET_JITSI_KEY: "{{ wa_secret_jitsi_key }}"
+      ADMIN_API_TOKEN: "{{ wa_admin_api_token }}"
+      ADMIN_API_URL: "{{ wa_admin_api_url }}"
+      JITSI_URL: "{{ wa_jitsi_url }}"
+      JITSI_ISS: "{{ wa_jitsi_iss }}"
+    labels:
+      - "traefik.http.routers.back.rule=Host(`api.{{ wa_domain }}`)"
+      - "traefik.http.routers.back.entryPoints=web"
+      - "traefik.http.services.back.loadbalancer.server.port=8080"
+      - "traefik.http.routers.back-ssl.rule=Host(`api.{{ wa_domain }}`)"
+      - "traefik.http.routers.back-ssl.entryPoints=websecure"
+      - "traefik.http.routers.back-ssl.tls=true"
+      - "traefik.http.routers.back-ssl.service=back"
+{% if traefik_use_acme %}
+      - "traefik.http.routers.back-ssl.tls.certresolver=myresolver"
+{% endif %}
+    restart: unless-stopped

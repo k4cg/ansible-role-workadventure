@@ -1,0 +1,31 @@
+---
+# tasks file for production deployment
+
+# maybe we can just download the docker-compose.yaml file
+- name: "Make sure directory {{ docker_compose_project_dir }} exists"
+  file:
+    path: "{{ docker_compose_project_dir }}"
+    state: directory
+
+- name: "Template out docker-compose.{{ env }}.yaml file"
+  ansible.builtin.template:
+    src: "templates/docker-compose.{{ env }}.j2"
+    dest: "{{ docker_compose_project_dir }}/docker-compose.{{ env }}.yaml"
+
+- name: "Create acme cert storage file"
+  ansible.builtin.file:
+    path: "{{ traefik_acme_cert_storage }}"
+    mode: '0600'
+    state: touch
+  when: traefik_use_acme
+
+- name: "Run docker-compose up"
+  community.docker.docker_compose:
+    project_src: "{{ docker_compose_project_dir }}"
+    files:
+      - "docker-compose.{{ env }}.yaml"
+  register: output_compose_up_prod
+
+- name: "Print docker-compose up output"
+  ansible.builtin.debug:
+    var: output_compose_up_prod

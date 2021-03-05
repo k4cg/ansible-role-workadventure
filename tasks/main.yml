@@ -4,5 +4,10 @@
   ansible.builtin.include_tasks: "tasks/install_prerequisites.yml"
   when: install_prerequisites
 
-- name: "Run tasks according to specified environment"
-  ansible.builtin.include_tasks: "tasks/{{ env }}.yml"
+- name: "Include cleanup tasks for specified environment"
+  ansible.builtin.include_tasks: "tasks/cleanup_{{ env }}.yml"
+  when: run_cleanup_tasks
+
+- name: "Run deployment tasks for specified environment"
+  ansible.builtin.include_tasks: "tasks/deploy_{{ env }}.yml"
+  when: deploy_wa

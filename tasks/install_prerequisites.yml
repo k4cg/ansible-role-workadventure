@@ -27,6 +27,7 @@
       ansible.builtin.package:
         name: git
         state: present
+      when: env == "dev"
   become: True
 
 # needed for community.docker.docker_compose
